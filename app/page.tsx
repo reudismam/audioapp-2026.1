@@ -3,7 +3,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FaPauseCircle, FaPlayCircle } from "react-icons/fa";
-import Music from "./data/Music";
 import musics from "./data/musics";
 
 export default function Home() {
@@ -13,28 +12,20 @@ export default function Home() {
   const [audioIndex, setAudioIndex] = useState<number>(0);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
     if (playing) {
       play();
     }
-  }, [audioIndex]);
-
-  useEffect(() => {
-    configAudio(0);
-  }, []);
+  }, [audioIndex])
 
   const play = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    console.log("play" + audio);
     audio.play();
   }
 
   const pause = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    console.log("pause" + audio);
     audio.pause();
   }
 
@@ -56,24 +47,20 @@ export default function Home() {
   }
 
   const configAudio = (index: number) => {
-    const newIndex = index % musics.length;
-    setAudioIndex(newIndex);
-  }
-
-  const nextMusic = () => {
-    setAudioIndex(audioIndex + 1);
+    setAudioIndex(index);
   }
 
   return (
-    <div className="w-2xl mr-auto ml-auto flex">
+    <div className="flex bg-amber-400 w-125 mr-auto ml-auto">
       <div>
         <ul>
           {
-            musics.map((music, index)=> {
+            musics.map((music, index) => {
               return (
-                <div onClick={() => configAudio(index)} className="w-50" key={index}>
-                  <img src={musics[index].imagem} alt={musics[index].nome} />
-                </div>
+                <li key={index} onClick={() => configAudio(index)} className="w-50">
+                  <h1>{music.nome}</h1>
+                  <img src={music.imagem} alt={"Imagem da música " + music.nome} />
+                </li>
               )
             })
           }
@@ -93,7 +80,6 @@ export default function Home() {
           value={volume}
           onChange={(e) => configVolume(Number(e.target.value))}
         />
-        <button onClick={() => nextMusic()}>Next</button>
       </div>
     </div>
   );
