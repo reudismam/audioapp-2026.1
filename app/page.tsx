@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react";
-import { FaPauseCircle, FaPlayCircle } from "react-icons/fa";
+import { FaBackward, FaForward, FaPauseCircle, FaPlayCircle } from "react-icons/fa";
 import musics from "./data/musics";
 
 export default function Home() {
@@ -10,12 +10,36 @@ export default function Home() {
   const [volume, setVolume] = useState<number>(1);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioIndex, setAudioIndex] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
 
   useEffect(() => {
     if (playing) {
       play();
     }
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.onloadedmetadata = () => {
+      setDuration(audio.duration);
+    }
+
+    audio.ontimeupdate = () => {
+      setCurrentTime(audio.currentTime);
+    }
   }, [audioIndex])
+
+  useEffect(()=>{
+    configAudio(0);
+    const audio = audioRef.current;
+    if (!audio) return;
+    setDuration(audio.duration);
+  }, []);
+
+  const formatTime = (time: number) => {
+    const minutes = Math.trunc(time/60);
+    const seconds = Math.trunc(time % 60);
+    return ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2);
+  }
 
   const play = () => {
     const audio = audioRef.current;
@@ -50,6 +74,13 @@ export default function Home() {
     setAudioIndex(index);
   }
 
+  const configCurrentTime = (time: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = time;
+    setCurrentTime(time);
+  }
+
   return (
     <div className="flex bg-amber-400 w-125 mr-auto ml-auto">
       <div>
@@ -66,7 +97,7 @@ export default function Home() {
           }
         </ul>
       </div>
-      <div className="items-center flex flex-col rounded-2xl border-gray-500 border-2 w-50 m-0 mr-auto ml-auto">
+      <div className="items-center flex flex-col w-50 m-0 mr-auto ml-auto">
         <audio ref={audioRef} src={musics[audioIndex].url} controls hidden></audio>
         <button onClick={() => playPause()} >
           {
@@ -80,6 +111,27 @@ export default function Home() {
           value={volume}
           onChange={(e) => configVolume(Number(e.target.value))}
         />
+        <div className="flex">
+          <p>{formatTime(currentTime)}</p>
+          <input 
+            type="range"
+            min={0}
+            step={0.001}
+            max={duration}
+            value={currentTime}
+            onChange={(e) => configCurrentTime(Number(e.target.value))}
+          />
+          <p>{formatTime(duration)}</p>
+        </div>
+        <div>
+          <button className="mr-4" onClick={()=>configCurrentTime(currentTime - 10)}>
+            <FaBackward />
+          </button>
+
+          <button onClick={() => configCurrentTime(currentTime + 10)}>
+             <FaForward />
+          </button>
+        </div>
       </div>
     </div>
   );
