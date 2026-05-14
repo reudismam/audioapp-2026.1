@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react";
-import { FaBackward, FaForward, FaPauseCircle, FaPlayCircle } from "react-icons/fa";
+import { FaBackward, FaForward, FaPauseCircle, FaPlayCircle, FaStepBackward, FaStepForward } from "react-icons/fa";
 import musics from "./data/musics";
 
 export default function Home() {
@@ -12,6 +12,7 @@ export default function Home() {
   const [audioIndex, setAudioIndex] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
+  const [velocity, setVelocity] = useState<number>(1);
 
   useEffect(() => {
     if (playing) {
@@ -25,6 +26,10 @@ export default function Home() {
 
     audio.ontimeupdate = () => {
       setCurrentTime(audio.currentTime);
+    }
+
+    audio.onended = () => {
+      setAudioIndex(audioIndex + 1);
     }
   }, [audioIndex])
 
@@ -71,7 +76,23 @@ export default function Home() {
   }
 
   const configAudio = (index: number) => {
+    if (index >= musics.length) {
+      index = 0; 
+    } else if (index < 0){
+      index = musics.length - 1;
+    }
     setAudioIndex(index);
+  }
+
+  const configVelocity = (number: number) => {
+    let newVelocity = number;
+    if (newVelocity > 3) {
+      newVelocity = 1;
+    }
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.playbackRate = newVelocity;
+    setVelocity(newVelocity);
   }
 
   const configCurrentTime = (time: number) => {
@@ -131,6 +152,25 @@ export default function Home() {
           <button onClick={() => configCurrentTime(currentTime + 10)}>
              <FaForward />
           </button>
+        </div>
+        <div>
+          <button onClick={()=> configAudio(audioIndex - 1)} className="mr-4">
+                <FaStepBackward />
+          </button>
+
+          <button onClick={() => configAudio(audioIndex + 1)}>
+            <FaStepForward />
+          </button>
+
+          <button onClick={() => configVelocity(velocity + 0.5)} className="bg-blue-500 rounded-[360px] w-6">
+            {velocity}
+          </button>
+        </div>
+        <div>
+          <div className="w-50">
+                  <h1>{musics[audioIndex].nome}</h1>
+                  <img src={musics[audioIndex].imagem} alt={"Imagem da música " + musics[audioIndex].nome} />
+                </div>
         </div>
       </div>
     </div>
